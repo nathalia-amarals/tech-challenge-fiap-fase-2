@@ -227,18 +227,52 @@ def desenhar_grade(grade: List[Dict[str, Any]], geracao: int, fitness: float) ->
             
             # Renderiza e desenha o texto
             try:
-                # Quebra o texto da disciplina em várias linhas se necessário
-                partes_disciplina = [disciplina[i:i+15] for i in range(0, len(disciplina), 15)]
-                for i, parte in enumerate(partes_disciplina[:2]):  # Máximo de 2 linhas
-                    texto_surface, _ = fonte_pequena.render(parte, Config.PRETO)
-                    janela.blit(texto_surface, (x + 5, y + 5 + i * 15))
+                y_offset = 5
                 
-                # Sala e professor em linhas separadas
-                sala_surface, _ = fonte_pequena.render(f"Sala: {sala}", Config.PRETO)
-                prof_surface, _ = fonte_pequena.render(f"Prof: {professor}", Config.PRETO)
+                # Tamanho da fonte para melhor legibilidade
+                fonte_pequena = pygame.freetype.SysFont('Arial', 10)
                 
-                janela.blit(sala_surface, (x + 5, y + 35))
-                janela.blit(prof_surface, (x + 5, y + 50))
+                # Função para renderizar texto com quebra de linha
+                def render_text(text, max_width, start_y):
+                    nonlocal y_offset
+                    words = text.split()
+                    lines = []
+                    current_line = []
+                    
+                    for word in words:
+                        test_line = ' '.join(current_line + [word])
+                        test_surface, _ = fonte_pequena.render(test_line, Config.PRETO)
+                        if test_surface.get_width() <= max_width - 10:  # 10px de margem
+                            current_line.append(word)
+                        else:
+                            if current_line:
+                                lines.append(' '.join(current_line))
+                            current_line = [word]
+                    
+                    if current_line:
+                        lines.append(' '.join(current_line))
+                    
+                    # Renderiza as linhas
+                    for i, line in enumerate(lines[:3]):  # Máximo de 3 linhas para a disciplina
+                        if (y_offset + i * 15) < Config.ALTURA_CELULA - 30:  # Deixa espaço para sala e professor
+                            text_surface, _ = fonte_pequena.render(line, Config.PRETO)
+                            janela.blit(text_surface, (x + 5, y + y_offset + i * 12))
+                    
+                    return y_offset + len(lines) * 12
+                
+                # Renderiza a disciplina
+                y_offset = render_text(disciplina, Config.LARGURA_CELULA, y_offset) + 5
+                
+                # Renderiza sala e professor em linhas menores
+                fonte_pequena = pygame.freetype.SysFont('Arial', 9)
+                sala_text = f"Sala: {sala}" if len(sala) < 15 else f"Sala: {sala[:12]}..."
+                prof_text = f"Prof: {professor}" if len(professor) < 15 else f"Prof: {professor[:12]}..."
+                
+                sala_surface, _ = fonte_pequena.render(sala_text, Config.PRETO)
+                prof_surface, _ = fonte_pequena.render(prof_text, Config.PRETO)
+                
+                janela.blit(sala_surface, (x + 5, y + Config.ALTURA_CELULA - 25))
+                janela.blit(prof_surface, (x + 5, y + Config.ALTURA_CELULA - 12))
             except Exception as e:
                 print(f"  ERRO ao renderizar texto: {e}")
             

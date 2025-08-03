@@ -72,6 +72,7 @@ def calcular_fitness(individuo: List[Dict[str, Any]]) -> int:
         - -200 pontos por conflito de sala
         - -300 pontos por sala incorreta para laboratórios
         - -50 pontos por desrespeito à preferência de horário
+        - -150 pontos por ter duas disciplinas no mesmo horário e dia (mesmo em salas diferentes)
     """
     pontos = 1000
     # Verifica conflitos
@@ -87,6 +88,10 @@ def calcular_fitness(individuo: List[Dict[str, Any]]) -> int:
                 aula1["horario"] == aula2["horario"] and 
                 aula1["sala"] == aula2["sala"]):
                 pontos -= 200
+            # Conflito de horário (mesmo dia e horário, mesmo em salas diferentes)
+            if (aula1["dia"] == aula2["dia"] and 
+                aula1["horario"] == aula2["horario"]):
+                pontos -= 150
         # Verifica se a sala está correta para laboratórios
         if (aula1["tipo"] == "laboratorio" and 
             aula1["sala"] != DISCIPLINAS[i]["sala_requerida"]):

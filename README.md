@@ -9,12 +9,15 @@ O sistema foi desenvolvido para resolver o problema de alocação de disciplinas
 - Disponibilidade de salas e laboratórios
 - Restrições de tipo de sala (teórica/laboratório)
 - Evitar conflitos de alocação
+- Exibição clara das informações dos professores
 
-## 🚀 Novidades
+## 🚀 Novidades na Versão Atual
 
-- **Visualização Aprimorada**: Interface gráfica otimizada com melhor exibição de texto e informações
-- **Restrições Inteligentes**: Prevenção de sobreposição de aulas no mesmo horário, mesmo em salas diferentes
-- **Melhor Legibilidade**: Texto das disciplinas ajustado automaticamente para melhor visualização
+- **Visualização Aprimorada com Matplotlib**: Nova interface gráfica mais limpa e responsiva
+- **Informações de Professores**: Exibição clara do professor responsável por cada disciplina
+- **Saída Formatada no Terminal**: Tabela organizada mostrando a grade horária completa
+- **Código Otimizado**: Melhor desempenho e organização do código
+- **Melhor Legibilidade**: Texto ajustado automaticamente para melhor visualização
 - **Exportação de Imagens**: Salve a grade horária como imagem para compartilhamento
 - **Validação de Dados**: Verificação rigorosa de horários e dias para garantir consistência
 
@@ -23,17 +26,14 @@ O sistema foi desenvolvido para resolver o problema de alocação de disciplinas
 ### Pré-requisitos
 - Python 3.8 ou superior
 - pip (gerenciador de pacotes do Python)
-- Dependências do sistema para o Pygame (caso necessário):
-  - Ubuntu/Debian: `sudo apt-get install python3-pygame`
-  - Fedora: `sudo dnf install python3-pygame`
-  - macOS: `brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf`
+- Dependências do sistema para o Matplotlib (caso necessário)
 
 ### Configuração do Ambiente
 
 1. **Clone o repositório**
    ```bash
    git clone [URL_DO_REPOSITÓRIO]
-   cd genetic_algorithm
+   cd tech-challenge-fiap-fase-2
    ```
 
 2. **Crie e ative um ambiente virtual (recomendado)**
@@ -55,13 +55,7 @@ O sistema foi desenvolvido para resolver o problema de alocação de disciplinas
    Isso instalará automaticamente:
    - `numpy`: Para operações numéricas
    - `matplotlib`: Para visualização de dados
-   - `pygame`: Para visualização interativa da grade horária
-   
-   E também as dependências de desenvolvimento:
-   - `pytest`: Para execução de testes
-   - `black`: Para formatação de código
-   - `flake8`: Para análise de código
-   - `sphinx` e `sphinx-rtd-theme`: Para geração de documentação
+   - `pygame`: Para suporte a visualização (opcional)
 
 ## 🚀 Como Usar
 
@@ -72,7 +66,7 @@ python main.py
 
 ### Opções de Linha de Comando
 ```bash
-python main.py --populacao 50 --geracoes 100 --visualizar --salvar-imagem grade.png
+python main.py --populacao 10 --geracoes 50 --visualizar --salvar-imagem grade.png
 ```
 
 **Parâmetros:**
@@ -81,33 +75,33 @@ python main.py --populacao 50 --geracoes 100 --visualizar --salvar-imagem grade.
 - `--visualizar`: Mostra a visualização gráfica ao final
 - `--salvar-imagem`: Salva a grade horária como imagem
 
-### Controles da Visualização
-- **ESC**: Fecha a visualização
-- **Clique no X**: Fecha a visualização
-- **Barra de Espaço**: Avança para a próxima geração (quando em modo de evolução)
-- **Seta para a Direita**: Avança para a próxima geração
-- **Seta para a Esquerda**: Volta para a geração anterior
+### Saída no Terminal
+A saída no terminal agora mostra uma tabela formatada com os detalhes da grade horária, incluindo:
+- Dia da semana
+- Horário
+- Nome da disciplina
+- Professor responsável
+- Sala de aula
 
 ## 📊 Estrutura do Código
 
 ### Arquivos Principais
 - `main.py`: Ponto de entrada do programa, interface de linha de comando
-- `genetic_algorithm.py`: Implementação do algoritmo genético com restrições e funções de fitness
-- `visualization.py`: Visualização interativa da grade horária com suporte a texto dinâmico
-- `config.py`: Configurações globais e constantes do sistema
+- `genetic_algorithm.py`: Implementação do algoritmo genético
+- `visualization_clean.py`: Visualização otimizada usando Matplotlib
+- `visualization.py`: Visualização antiga usando Pygame (mantida para compatibilidade)
 - `requirements.txt`: Dependências do projeto
 
-### Restrições Implementadas
-1. **Conflitos de Professor**: Nenhum professor pode dar aula em dois lugares ao mesmo tempo
-2. **Conflitos de Sala**: Nenhuma sala pode ser usada por mais de uma disciplina simultaneamente
-3. **Laboratórios Específicos**: Apenas disciplinas que requerem laboratório podem ser alocadas em salas de laboratório
-4. **Sem Sobreposição**: Não são permitidas duas disciplinas no mesmo horário, mesmo em salas diferentes
-
-### Dados do Problema
-- `DISCIPLINAS`: Lista de disciplinas com suas restrições
-- `SALAS`: Salas e laboratórios disponíveis
-- `DIAS`: Dias da semana
-- `HORARIOS_MANHA`/`HORARIOS_TARDE`: Faixas horárias
+### Exemplo de Saída no Terminal
+```
+Detalhes da solução:
+--------------------------------------------------------------------------------
+Dia        | Horário         | Disciplina                     | Professor            | Sala
+--------------------------------------------------------------------------------
+Segunda    | 08:00-10:00     | Algoritmos e Programação       | Alice                | Lab. Software
+Segunda    | 10:00-12:00     | Cálculo I                      | Ana                  | Sala 101
+...
+```
 
 ## 🔍 Solução de Problemas
 
@@ -116,25 +110,17 @@ Verifique se:
 1. O formato dos horários está correto (ex: "08:00-10:00")
 2. Os dias da semana estão escritos corretamente (ex: "Segunda", "Terça", etc.)
 3. As disciplinas têm todos os campos necessários (disciplina, professor, sala, dia, horário)
-4. Não há conflitos de horário que estejam removendo disciplinas da grade
 
-### Texto cortado nas células
-O sistema agora faz quebra automática de texto. Se algum texto ainda estiver sendo cortado:
-1. Tente reduzir o tamanho do texto da disciplina
-2. Verifique se a resolução da tela é adequada
-3. Considere usar abreviações para nomes longos de disciplinas
+### Texto não está cabendo nas células
+O sistema faz ajuste automático de fonte, mas se o texto ainda não estiver legível:
+1. Considere usar abreviações para nomes longos de disciplinas
+2. Reduza o número de caracteres nas descrições
 
-### Erros ao executar o Pygame
-Certifique-se de que todas as dependências do sistema estão instaladas (veja a seção de instalação). Se o problema persistir:
+### Erros ao executar
+Certifique-se de que todas as dependências estão instaladas corretamente:
 ```bash
-pip install --upgrade pygame
+pip install -r requirements.txt
 ```
-
-### Disciplinas não aparecendo na grade
-Se algumas disciplinas não estão aparecendo, verifique:
-1. Se há conflitos de horário que estejam sendo penalizados
-2. Se os horários estão dentro dos intervalos permitidos
-3. Se as restrições de sala estão sendo respeitadas
 
 ## 📄 Licença
 

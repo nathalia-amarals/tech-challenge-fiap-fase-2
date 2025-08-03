@@ -9,11 +9,13 @@ Data: Agosto 2025
 """
 import sys
 import os
+import pygame
 import argparse
+import time
 import matplotlib.pyplot as plt
 from pprint import pprint
 import genetic_algorithm as ga
-from visualization import visualizar_grade, salvar_imagem_grade, finalizar_visualizacao
+from visualization_clean import visualizar_grade, salvar_imagem_grade, finalizar_visualizacao
 
 def acompanhar_evolucao(historico_fitness, melhor_fitness_por_geracao):
     """
@@ -61,10 +63,43 @@ def executar_algoritmo_genetico(tamanho_populacao=50, geracoes=100, mostrar_visu
     print("\nIniciando algoritmo genético...")
     print(f"Configuração: População={tamanho_populacao}, Gerações={geracoes}")
     
+    # Inicializa o pygame se a visualização estiver ativada
+    if mostrar_visualizacao:
+        pygame.init()
+    
+    # Variáveis para armazenar a população atual
+    populacao_atual = []
+    
     # Callback para visualização em tempo real
-    def callback_visualizacao(melhor_grade, geracao, fitness):
-        # Não mostra a visualização em tempo real, apenas ao final se solicitado
-        pass
+    def callback_visualizacao(melhor_grade, geracao, fitness, populacao=None, finalizar=False):
+        nonlocal populacao_atual
+        if populacao is not None:
+            populacao_atual = populacao
+        
+        # Se a visualização estiver ativada, mostra em tempo real
+        if mostrar_visualizacao:
+            try:
+                # Atualiza a visualização
+                continuar = visualizar_grade(
+                    melhor_grade,
+                    geracao,
+                    fitness,
+                    populacao=populacao_atual,
+                    calcular_fitness_func=ga.calcular_fitness,
+                    fechar_ao_terminar=finalizar,
+                    mostrar_evolucao=True
+                )
+                
+                # Pequena pausa para permitir a atualização da tela
+                time.sleep(0.05)
+                
+                return continuar
+                
+            except Exception as e:
+                print(f"Erro na visualização: {e}")
+                return False
+                
+        return True
     
     # Executa o algoritmo genético
     melhor_grade = ga.algoritmo_genetico(
@@ -80,14 +115,35 @@ def executar_algoritmo_genetico(tamanho_populacao=50, geracoes=100, mostrar_visu
     print(f"Melhor solução encontrada (Fitness: {fitness})")
     print("="*50)
     
-    # Mostra a visualização se solicitado
+    # Mostra a visualização final se solicitado
     if mostrar_visualizacao:
+        print("\nAbrindo visualização da grade horária...")
+        print("Pressione Ctrl+C no terminal para encerrar.\n")
+        
         try:
-            print("\nAbrindo visualização da grade horária...")
-            print("Pressione ESC ou feche a janela para continuar.")
-            visualizar_grade(melhor_grade, geracoes, fitness)
+            # Mostra a visualização final
+            visualizar_grade(
+                melhor_grade,
+                geracoes,
+                fitness,
+                populacao=populacao_atual,
+                calcular_fitness_func=ga.calcular_fitness,
+                fechar_ao_terminar=False,
+                mostrar_evolucao=True
+            )
+            
+            # Mantém a janela aberta até o usuário fechar
+            try:
+                plt.show(block=True)
+            except KeyboardInterrupt:
+                print("\nVisualização encerrada pelo usuário.")
+                plt.close('all')
+            
         except Exception as e:
-            print(f"Erro ao exibir visualização: {e}")
+            print(f"Erro ao exibir a visualização final: {e}")
+        finally:
+            # Finaliza a visualização corretamente
+            finalizar_visualizacao()
     
     return melhor_grade
 
@@ -124,8 +180,19 @@ if __name__ == "__main__":
         
         # Mostra detalhes da solução
         print("\nDetalhes da solução:")
-        for aula in melhor_grade:
-            print(f"- {aula['disciplina']}: {aula['dia']} {aula['horario']} ({aula['sala']})")
+        # Ordena as aulas por dia e horário para facilitar a visualização
+        aulas_ordenadas = sorted(melhor_grade, key=lambda x: (x['dia'], x['horario']))
+        
+        # Cabeçalho da tabela
+        print("-" * 80)
+        print(f"{'Dia':<10} | {'Horário':<15} | {'Disciplina':<30} | {'Professor':<20} | Sala")
+        print("-" * 80)
+        
+        # Dados das aulas
+        for aula in aulas_ordenadas:
+            print(f"{aula['dia']:<10} | {aula['horario']:<15} | {aula['disciplina']:<30} | {aula.get('professor', 'N/A'):<20} | {aula['sala']}")
+        
+        print("-" * 80)
         
         print("\nExecução concluída com sucesso!")
             

@@ -41,6 +41,9 @@ def gerar_individuo() -> List[Dict[str, Any]]:
         else:
             horario = random.choice(HORARIOS_MANHA + HORARIOS_TARDE)
         
+        # Garante que o horário está no formato correto
+        horario = horario.strip()
+        
         aula = {
             "disciplina": disciplina["nome"],
             "professor": disciplina["professor"],
@@ -69,6 +72,7 @@ def calcular_fitness(individuo: List[Dict[str, Any]]) -> int:
         - -200 pontos por conflito de sala
         - -300 pontos por sala incorreta para laboratórios
         - -50 pontos por desrespeito à preferência de horário
+        - -150 pontos por ter duas disciplinas no mesmo horário e dia (mesmo em salas diferentes)
     """
     pontos = 1000
     # Verifica conflitos
@@ -84,6 +88,10 @@ def calcular_fitness(individuo: List[Dict[str, Any]]) -> int:
                 aula1["horario"] == aula2["horario"] and 
                 aula1["sala"] == aula2["sala"]):
                 pontos -= 200
+            # Conflito de horário (mesmo dia e horário, mesmo em salas diferentes)
+            if (aula1["dia"] == aula2["dia"] and 
+                aula1["horario"] == aula2["horario"]):
+                pontos -= 150
         # Verifica se a sala está correta para laboratórios
         if (aula1["tipo"] == "laboratorio" and 
             aula1["sala"] != DISCIPLINAS[i]["sala_requerida"]):
@@ -123,16 +131,33 @@ def mutacao(individuo: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         Indivíduo com mutação aplicada.
         
     A mutação consiste em alterar aleatoriamente o dia e horário de uma aula.
+    Garante que apenas horários válidos sejam usados.
     """
     if not individuo:
         return individuo
         
-    aula_mutada = random.randint(0, len(individuo)-1)
-    novo_dia = random.choice(DIAS)
-    novo_horario = random.choice(HORARIOS_MANHA + HORARIOS_TARDE)
-    
     # Cria uma cópia para não modificar o original diretamente
     novo_individuo = [aula.copy() for aula in individuo]
+    
+    # Seleciona uma aula aleatória para mutação
+    aula_mutada = random.randint(0, len(novo_individuo)-1)
+    
+    # Escolhe um novo dia e horário válidos
+    novo_dia = random.choice(DIAS)
+    
+    # Escolhe o horário baseado na preferência da disciplina
+    disciplina = novo_individuo[aula_mutada]
+    if disciplina["preferencia"] == "manha":
+        novo_horario = random.choice(HORARIOS_MANHA)
+    elif disciplina["preferencia"] == "tarde":
+        novo_horario = random.choice(HORARIOS_TARDE)
+    else:
+        novo_horario = random.choice(HORARIOS_MANHA + HORARIOS_TARDE)
+    
+    # Garante que o horário está no formato correto
+    novo_horario = novo_horario.strip()
+    
+    # Aplica as mutações
     novo_individuo[aula_mutada]["dia"] = novo_dia
     novo_individuo[aula_mutada]["horario"] = novo_horario
     
@@ -204,11 +229,18 @@ def algoritmo_genetico(tamanho_populacao=100, geracoes=200, callback_visualizaca
         # Exibe progresso a cada 20 gerações
         if geracao % 20 == 0:
             print(f"Geração {geracao}: Melhor fitness = {melhor_fitness_global}")
+        
+        # Chama o callback de visualização, se fornecido
+        if callback_visualizacao is not None:
+            try:
+                callback_visualizacao(melhor_global, geracao, melhor_fitness_global, populacao)
+            except Exception as e:
+                print(f"Erro na visualização: {e}")
     
     # Última atualização da visualização
-    if callback_visualizacao:
+    if callback_visualizacao is not None:
         try:
-            callback_visualizacao(melhor_global, geracoes-1, melhor_fitness_global)
+            callback_visualizacao(melhor_global, geracoes-1, melhor_fitness_global, populacao)
         except Exception as e:
             print(f"Erro na visualização final: {e}")
     

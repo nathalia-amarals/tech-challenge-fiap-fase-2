@@ -1,0 +1,13 @@
+# Dependências principais
+numpy>=1.21.0
+matplotlib>=3.4.0
+pygame>=2.0.0
+
+# Dependências de desenvolvimento
+pytest>=6.2.0
+black>=21.5b2
+flake8>=3.9.0
+
+# Para geração de documentação
+sphinx>=4.0.0
+sphinx-rtd-theme>=0.5.0

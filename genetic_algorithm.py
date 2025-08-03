@@ -41,6 +41,9 @@ def gerar_individuo() -> List[Dict[str, Any]]:
         else:
             horario = random.choice(HORARIOS_MANHA + HORARIOS_TARDE)
         
+        # Garante que o horário está no formato correto
+        horario = horario.strip()
+        
         aula = {
             "disciplina": disciplina["nome"],
             "professor": disciplina["professor"],
@@ -123,16 +126,33 @@ def mutacao(individuo: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         Indivíduo com mutação aplicada.
         
     A mutação consiste em alterar aleatoriamente o dia e horário de uma aula.
+    Garante que apenas horários válidos sejam usados.
     """
     if not individuo:
         return individuo
         
-    aula_mutada = random.randint(0, len(individuo)-1)
-    novo_dia = random.choice(DIAS)
-    novo_horario = random.choice(HORARIOS_MANHA + HORARIOS_TARDE)
-    
     # Cria uma cópia para não modificar o original diretamente
     novo_individuo = [aula.copy() for aula in individuo]
+    
+    # Seleciona uma aula aleatória para mutação
+    aula_mutada = random.randint(0, len(novo_individuo)-1)
+    
+    # Escolhe um novo dia e horário válidos
+    novo_dia = random.choice(DIAS)
+    
+    # Escolhe o horário baseado na preferência da disciplina
+    disciplina = novo_individuo[aula_mutada]
+    if disciplina["preferencia"] == "manha":
+        novo_horario = random.choice(HORARIOS_MANHA)
+    elif disciplina["preferencia"] == "tarde":
+        novo_horario = random.choice(HORARIOS_TARDE)
+    else:
+        novo_horario = random.choice(HORARIOS_MANHA + HORARIOS_TARDE)
+    
+    # Garante que o horário está no formato correto
+    novo_horario = novo_horario.strip()
+    
+    # Aplica as mutações
     novo_individuo[aula_mutada]["dia"] = novo_dia
     novo_individuo[aula_mutada]["horario"] = novo_horario
     

@@ -102,6 +102,12 @@ def inicializar_pygame() -> bool:
         pygame_initialized = False
         return False
 
+def normalize_time(time_str: str) -> str:
+    """Normaliza a string de horário removendo espaços extras e garantindo formato consistente."""
+    if not time_str:
+        return ""
+    return time_str.strip()
+
 def desenhar_grade(grade: List[Dict[str, Any]], geracao: int, fitness: float) -> None:
     """
     Renderiza a grade horária na janela do Pygame.
@@ -184,15 +190,18 @@ def desenhar_grade(grade: List[Dict[str, Any]], geracao: int, fitness: float) ->
     for aula in grade:
         try:
             dia = aula.get('dia')
-            horario = aula.get('horario')
+            horario = normalize_time(aula.get('horario', ''))
             
             # Verifica se o dia e o horário são válidos
-            if dia not in Config.DIAS:
-                print(f"  AVISO: Dia inválido: {dia}")
+            if not dia or dia not in Config.DIAS:
+                print(f"  AVISO: Dia inválido ou ausente: {dia}")
+                print(f"  Aula: {aula.get('disciplina', 'Desconhecida')}")
                 continue
                 
-            if horario not in Config.HORARIOS:
-                print(f"  AVISO: Horário inválido: {horario}")
+            if not horario or horario not in Config.HORARIOS:
+                print(f"  AVISO: Horário inválido ou ausente: {horario}")
+                print(f"  Aula: {aula.get('disciplina', 'Desconhecida')}")
+                print(f"  Horários válidos: {Config.HORARIOS}")
                 continue
             
             dia_idx = Config.DIAS.index(dia)

@@ -229,11 +229,18 @@ def algoritmo_genetico(tamanho_populacao=100, geracoes=200, callback_visualizaca
         # Exibe progresso a cada 20 gerações
         if geracao % 20 == 0:
             print(f"Geração {geracao}: Melhor fitness = {melhor_fitness_global}")
+        
+        # Chama o callback de visualização, se fornecido
+        if callback_visualizacao is not None:
+            try:
+                callback_visualizacao(melhor_global, geracao, melhor_fitness_global, populacao)
+            except Exception as e:
+                print(f"Erro na visualização: {e}")
     
     # Última atualização da visualização
-    if callback_visualizacao:
+    if callback_visualizacao is not None:
         try:
-            callback_visualizacao(melhor_global, geracoes-1, melhor_fitness_global)
+            callback_visualizacao(melhor_global, geracoes-1, melhor_fitness_global, populacao)
         except Exception as e:
             print(f"Erro na visualização final: {e}")
     
